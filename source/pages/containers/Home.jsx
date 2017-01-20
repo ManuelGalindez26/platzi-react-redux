@@ -1,5 +1,6 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import { FormattedMessage } from 'react-intl';
+import { connect } from 'react-redux';
 
 import Post from '../../post/containers/Post';
 import Loading from '../../shared/components/Loading';
@@ -10,14 +11,14 @@ import api from '../../api';
 
 import styles from './Page.css';
 
+import actions from '../../actions';
+
 class Home extends Component {
 
   constructor(props) {
     super(props);
 
     this.state = {
-      page: 1,
-      posts: [],
       loading: true,
     };
 
@@ -34,11 +35,13 @@ class Home extends Component {
   }
 
   async initialFetch() {
-    const posts = await api.posts.getList(this.state.page);
+    const posts = await api.posts.getList(this.props.page);
+
+    this.props.dispatch(
+      actions.setPost(posts),
+    );
 
     this.setState({
-      posts,
-      page: this.state.page + 1,
       loading: false,
     });
   }
@@ -55,14 +58,16 @@ class Home extends Component {
 
     return this.setState({ loading: true }, async () => {
       try {
-        const posts = await api.posts.getList(this.state.page);
+        const posts = await api.posts.getList(this.props.page);
+
+        this.props.dispatch(
+          actions.setPost(posts),
+        );
+
         this.setState({
-          posts: this.state.posts.concat(posts),
-          page: this.state.page + 1,
           loading: false,
         });
       } catch (error) {
-        console.log(error);
         this.setState({ loading: false });
       }
     });
@@ -76,7 +81,7 @@ class Home extends Component {
         </Title>
 
         <section className={styles.list}>
-          {this.state.posts
+          {this.props.posts
             .map(post => <Post key={post.id} {...post} />)
           }
           {this.state.loading && (
@@ -88,4 +93,25 @@ class Home extends Component {
   }
 }
 
-export default Home;
+Home.propTypes = {
+  dispatch: PropTypes.func,
+  posts: PropTypes.arrayOf(PropTypes.object),
+  page: PropTypes.number,
+};
+
+/* connect es un HOC por lo que se de pasar un componente
+que en este caso es Home, pero antes se debe inicializar (Ejecutar como una funcion)
+y una vez ejeuctada la funciona resivimos el HOC el cual le pasamos Home.
+
+*/
+
+// Nos permite obteter parte del estado para enviar como props a Home
+function mapStateToProps(state) {
+  return {
+    posts: state.posts.entities,
+    page: state.posts.page,
+  };
+}
+
+
+export default connect(mapStateToProps)(Home);

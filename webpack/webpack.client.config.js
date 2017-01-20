@@ -15,7 +15,7 @@ const config = {
       {
         test: /\.jsx?$/,
         loader: 'eslint',
-        exclude: /(node_modules)/,
+        exclude: /node_modules/,
       },
     ],
     loaders: [
@@ -26,7 +26,7 @@ const config = {
       {
         test: /\.jsx?$/,
         loader: 'babel',
-        exclude: /(node_modules)/,
+        exclude: /node_modules/,
         query: {
           presets: ['es2016', 'es2017', 'react'],
           env: {

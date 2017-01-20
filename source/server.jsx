@@ -3,11 +3,15 @@ import React from 'react';
 import { renderToString, renderToStaticMarkup } from 'react-dom/server';
 import { ServerRouter, createServerRenderContext } from 'react-router';
 import { IntlProvider } from 'react-intl';
+import { Provider } from 'react-redux';
+
 
 import Pages from './pages/containers/Page';
 import Layout from './pages/components/Layout';
 
 import messages from './messages.json';
+
+import store from './store';
 
 const domain = process.env.NODE_ENV === 'production'
   ? 'https://react-redux-platzi-sfs.now.sh'
@@ -18,11 +22,13 @@ function requestHandler(request, response) {
   const context = createServerRenderContext();
 
   let html = renderToString(
-    <IntlProvider locale={locale} messages={messages[locale]}>
-      <ServerRouter location={request.url} context={context}>
-        <Pages />
-      </ServerRouter>
-    </IntlProvider>,
+    <Provider store={store}>
+      <IntlProvider locale={locale} messages={messages[locale]}>
+        <ServerRouter location={request.url} context={context}>
+          <Pages />
+        </ServerRouter>
+      </IntlProvider>
+    </Provider>,
   );
 
   const result = context.getResult();
@@ -38,11 +44,13 @@ function requestHandler(request, response) {
   if (result.missed) {
     response.writeHead(404);
     html = renderToString(
-      <IntlProvider locale={locale} messages={messages[locale]}>
-        <ServerRouter location={request.url} context={context}>
-          <Pages />
-        </ServerRouter>
-      </IntlProvider>,
+      <Provider store={store}>
+        <IntlProvider locale={locale} messages={messages[locale]}>
+          <ServerRouter location={request.url} context={context}>
+            <Pages />
+          </ServerRouter>
+        </IntlProvider>
+      </Provider>,
     );
   }
 
